@@ -176,6 +176,122 @@ docker compose up -d
 
 > 在 `docker-compose.yml` 中已通过注释提供加速镜像地址，可按需替换
 
+## 📖 使用指南
+
+启动服务后，打开浏览器访问 `http://localhost:3000`，按以下步骤使用：
+
+### 第一步：上传种子材料
+
+在首页右侧控制台：
+
+1. **上传文件**：将数据分析报告、新闻文档或小说等种子材料拖拽至上传区域（支持 **PDF、MD、TXT** 格式，最大 50MB）
+2. **输入模拟提示词**：用自然语言描述你的预测需求，例如：*"若发布某项公告，会引发什么舆情走向？"*
+3. 点击 **"启动引擎"** 按钮
+
+### 第二步：图谱构建
+
+系统自动完成：
+
+- **本体生成**：LLM 分析文档，提取实体类型和关系类型
+- **GraphRAG 构建**：文档切块后注入 Zep 向量数据库，构建知识图谱
+
+完成后点击 **"进入环境搭建"**。
+
+### 第三步：环境搭建
+
+系统自动完成：
+
+- **Agent 人设生成**：基于图谱提取实体，为每个 Agent 生成姓名、职业、简介、兴趣话题等独立人格
+- **平台参数配置**：LLM 智能配置双平台（类 Twitter / 类 Reddit）的模拟时长、轮次和可用行为
+
+可预览生成的 Agent 列表，确认后进入下一步。
+
+### 第四步：开始模拟
+
+- Agent 在双平台（信息广场 / 话题社区）上并行交互
+- 实时显示每个平台的当前轮次、已用时间和行为次数
+- 图谱面板动态展示演化中的知识图谱
+
+模拟完成后点击 **"开始生成结果报告"**。
+
+### 第五步：报告生成
+
+ReportAgent 利用工具集深度分析模拟数据，逐章节生成预测报告，包括：
+
+- 关键发现与行为模式
+- 平台差异分析
+- 预测结论与建议
+
+### 第六步：深度互动
+
+- **与 ReportAgent 对话**：对报告内容提问或深入探讨
+- **与模拟 Agent 对话**：选择模拟世界中的任意角色进行交流，了解其在模拟中的行为和想法
+
+> **预计用时**：完整流程约 15-45 分钟，取决于文档大小和模拟轮次。
+
+## 🗂️ 项目结构
+
+```
+MiroFish/
+├── backend/                  # Python Flask 后端
+│   ├── app/
+│   │   ├── api/              # API 端点（图谱/模拟/报告）
+│   │   ├── services/         # 核心业务逻辑（13 个服务模块）
+│   │   ├── models/           # 数据模型
+│   │   ├── utils/            # 工具类（LLM 客户端、文件解析等）
+│   │   └── config.py         # 配置管理
+│   ├── scripts/              # 辅助脚本
+│   ├── run.py                # 后端入口
+│   └── pyproject.toml        # Python 依赖
+├── frontend/                 # Vue 3 + Vite 前端
+│   ├── src/
+│   │   ├── views/            # 页面组件
+│   │   ├── components/       # UI 组件（5 步骤组件 + 图谱面板）
+│   │   ├── api/              # API 调用模块
+│   │   ├── router/           # 路由配置
+│   │   └── store/            # 状态管理
+│   └── package.json          # 前端依赖
+├── docker-compose.yml        # Docker 编排配置
+├── Dockerfile                # 多阶段 Docker 构建
+├── .env.example              # 环境变量模板
+└── package.json              # 根目录脚本（monorepo 管理）
+```
+
+## ⚙️ 配置参考
+
+### 必需环境变量
+
+| 变量名 | 说明 | 示例 |
+|--------|------|------|
+| `LLM_API_KEY` | LLM API 密钥（支持 OpenAI SDK 格式） | `sk-xxxxxxxx` |
+| `LLM_BASE_URL` | LLM API 地址 | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `LLM_MODEL_NAME` | 模型名称 | `qwen-plus` |
+| `ZEP_API_KEY` | Zep Cloud API 密钥 | `z_xxxxxxxx` |
+
+### 可选环境变量
+
+| 变量名 | 说明 | 默认值 |
+|--------|------|--------|
+| `LLM_BOOST_API_KEY` | 加速 LLM 密钥（不使用请勿配置此项） | — |
+| `LLM_BOOST_BASE_URL` | 加速 LLM 地址 | — |
+| `LLM_BOOST_MODEL_NAME` | 加速 LLM 模型名 | — |
+| `FLASK_DEBUG` | Flask 调试模式 | `True` |
+| `OASIS_DEFAULT_MAX_ROUNDS` | 默认最大模拟轮次 | `10` |
+| `REPORT_AGENT_MAX_TOOL_CALLS` | ReportAgent 最大工具调用次数 | `5` |
+| `REPORT_AGENT_MAX_REFLECTION_ROUNDS` | ReportAgent 最大反思轮次 | `2` |
+| `REPORT_AGENT_TEMPERATURE` | ReportAgent 生成温度 | `0.5` |
+
+## 🔧 常见问题
+
+| 问题 | 原因 | 解决方案 |
+|------|------|----------|
+| 启动时提示 `LLM_API_KEY 未配置` | 未创建 `.env` 文件或未填写密钥 | 运行 `cp .env.example .env` 并填写 API 密钥 |
+| `uv` 命令未找到 | 未安装 Python 包管理器 uv | 参考 [uv 官方安装说明](https://docs.astral.sh/uv/getting-started/installation/) |
+| 前端页面空白 | Node.js 版本过低 | 确保 Node.js ≥ 18，使用 `node -v` 检查 |
+| 模拟过程中 LLM 请求失败 | API 额度耗尽或网络问题 | 检查 LLM API 余额，先尝试 < 40 轮的模拟 |
+| Docker 镜像拉取缓慢 | 网络访问 GitHub Container Registry 较慢 | 在 `docker-compose.yml` 中替换为加速镜像地址 |
+| 文件上传失败 | 文件格式不支持或超过 50MB | 确保文件为 PDF、MD 或 TXT 格式且小于 50MB |
+
 ## 📬 更多交流
 
 <div align="center">
