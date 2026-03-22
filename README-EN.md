@@ -176,6 +176,122 @@ Reads `.env` from root directory by default, maps ports `3000 (frontend) / 5001 
 
 > Mirror address for faster pulling is provided as comments in `docker-compose.yml`, replace if needed.
 
+## 📖 Usage Guide
+
+After starting the services, open `http://localhost:3000` in your browser and follow these steps:
+
+### Step 1: Upload Seed Materials
+
+On the right-side console of the home page:
+
+1. **Upload files**: Drag and drop data analysis reports, news documents, or novels into the upload zone (supports **PDF, MD, TXT** formats, max 50 MB)
+2. **Enter simulation prompt**: Describe your prediction requirement in natural language, e.g., *"What public sentiment would result if a certain announcement is released?"*
+3. Click the **"Start Engine"** button
+
+### Step 2: Graph Building
+
+The system automatically:
+
+- **Generates ontology**: The LLM analyzes your documents and extracts entity types and relation types
+- **Builds GraphRAG**: Documents are chunked and injected into the Zep vector database to construct a knowledge graph
+
+Click **"Enter Environment Setup"** when complete.
+
+### Step 3: Environment Setup
+
+The system automatically:
+
+- **Generates Agent personas**: Extracts entities from the graph and generates a unique name, profession, bio, and interest topics for each Agent
+- **Configures platform parameters**: The LLM intelligently configures dual-platform (Twitter-like / Reddit-like) simulation duration, rounds, and available actions
+
+You can preview the generated Agent list before proceeding.
+
+### Step 4: Run Simulation
+
+- Agents interact in parallel on both platforms (Info Plaza / Topic Community)
+- Real-time display of each platform's current round, elapsed time, and action count
+- The graph panel dynamically visualizes the evolving knowledge graph
+
+Click **"Start Generating Report"** when simulation completes.
+
+### Step 5: Report Generation
+
+The ReportAgent uses a rich toolset to deeply analyze simulation data and generates a prediction report section by section, including:
+
+- Key findings and behavioral patterns
+- Cross-platform analysis
+- Prediction conclusions and recommendations
+
+### Step 6: Deep Interaction
+
+- **Chat with ReportAgent**: Ask questions about the report or explore findings further
+- **Chat with simulated Agents**: Select any agent in the simulated world to learn about their behavior and thoughts during the simulation
+
+> **Estimated time**: The full workflow takes approximately 15–45 minutes, depending on document size and simulation rounds.
+
+## 🗂️ Project Structure
+
+```
+MiroFish/
+├── backend/                  # Python Flask backend
+│   ├── app/
+│   │   ├── api/              # API endpoints (graph / simulation / report)
+│   │   ├── services/         # Core business logic (13 service modules)
+│   │   ├── models/           # Data models
+│   │   ├── utils/            # Utilities (LLM client, file parser, etc.)
+│   │   └── config.py         # Configuration management
+│   ├── scripts/              # Utility scripts
+│   ├── run.py                # Backend entry point
+│   └── pyproject.toml        # Python dependencies
+├── frontend/                 # Vue 3 + Vite frontend
+│   ├── src/
+│   │   ├── views/            # Page components
+│   │   ├── components/       # UI components (5 step components + graph panel)
+│   │   ├── api/              # API call modules
+│   │   ├── router/           # Router configuration
+│   │   └── store/            # State management
+│   └── package.json          # Frontend dependencies
+├── docker-compose.yml        # Docker Compose configuration
+├── Dockerfile                # Multi-stage Docker build
+├── .env.example              # Environment variable template
+└── package.json              # Root scripts (monorepo management)
+```
+
+## ⚙️ Configuration Reference
+
+### Required Environment Variables
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `LLM_API_KEY` | LLM API key (any OpenAI SDK-compatible API) | `sk-xxxxxxxx` |
+| `LLM_BASE_URL` | LLM API base URL | `https://dashscope.aliyuncs.com/compatible-mode/v1` |
+| `LLM_MODEL_NAME` | Model name | `qwen-plus` |
+| `ZEP_API_KEY` | Zep Cloud API key | `z_xxxxxxxx` |
+
+### Optional Environment Variables
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `LLM_BOOST_API_KEY` | Boost LLM key (omit from `.env` if unused) | — |
+| `LLM_BOOST_BASE_URL` | Boost LLM base URL | — |
+| `LLM_BOOST_MODEL_NAME` | Boost LLM model name | — |
+| `FLASK_DEBUG` | Flask debug mode | `True` |
+| `OASIS_DEFAULT_MAX_ROUNDS` | Default max simulation rounds | `10` |
+| `REPORT_AGENT_MAX_TOOL_CALLS` | Max tool calls for ReportAgent | `5` |
+| `REPORT_AGENT_MAX_REFLECTION_ROUNDS` | Max reflection rounds for ReportAgent | `2` |
+| `REPORT_AGENT_TEMPERATURE` | ReportAgent generation temperature | `0.5` |
+
+## 🔧 Troubleshooting
+
+| Problem | Cause | Solution |
+|---------|-------|----------|
+| `LLM_API_KEY 未配置` on startup | `.env` file missing or keys not set | Run `cp .env.example .env` and fill in API keys |
+| `uv` command not found | Python package manager uv not installed | See [uv installation docs](https://docs.astral.sh/uv/getting-started/installation/) |
+| Blank frontend page | Node.js version too old | Ensure Node.js ≥ 18; check with `node -v` |
+| LLM requests fail during simulation | API quota exhausted or network issue | Check LLM API balance; try simulations with < 40 rounds first |
+| Slow Docker image pull | Slow access to GitHub Container Registry | Replace with the mirror address in `docker-compose.yml` |
+| File upload fails | Unsupported format or exceeds 50 MB | Ensure file is PDF, MD, or TXT and under 50 MB |
+
 ## 📬 Join the Conversation
 
 <div align="center">
